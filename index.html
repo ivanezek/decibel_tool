@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competencia de Gritos "Flynnkity" 🎤</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎤 Competencia de Gritos</h1>
+            <p>¡Grita "Flynnkity" lo más fuerte que puedas!</p>
+        </header>
+
+        <main>
+            <div class="microphone-section">
+                <button id="startBtn" class="start-button">
+                    🎤 Iniciar Micrófono
+                </button>
+                <div id="micStatus" class="mic-status">Presiona para comenzar</div>
+            </div>
+
+            <div class="meter-section">
+                <div class="decibel-display">
+                    <div id="decibelValue" class="decibel-value">0 dB</div>
+                    <div class="meter-container">
+                        <div id="meterBar" class="meter-bar"></div>
+                    </div>
+                    <div class="meter-labels">
+                        <span>Silencio</span>
+                        <span>¡Flynnkity!</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="competition-section">
+                <div class="current-attempt">
+                    <h3>Intento Actual</h3>
+                    <div id="currentMax" class="score">0 dB</div>
+                </div>
+
+                <div class="best-score">
+                    <h3>🏆 Mejor Puntuación</h3>
+                    <div id="bestScore" class="score best">0 dB</div>
+                    <div id="bestPlayer" class="player-name">-</div>
+                </div>
+
+                <button id="recordBtn" class="record-button" disabled>
+                    🔴 Grabar "Flynnkity"
+                </button>
+
+                <div class="player-input">
+                    <input type="text" id="playerName" placeholder="Tu nombre" maxlength="20">
+                </div>
+            </div>
+
+            <div class="leaderboard">
+                <h3>🏅 Tabla de Puntuaciones</h3>
+                <div id="leaderboardList" class="leaderboard-list">
+                    <div class="empty-leaderboard">¡Sé el primero en gritar!</div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Tip: Para mejores resultados, acércate al micrófono y grita con energía!</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
