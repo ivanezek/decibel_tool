@@ -24,8 +24,8 @@
             <div class="meter-section">
                 <div class="decibel-display">
                     <div id="decibelValue" class="decibel-value">0 dB</div>
-                    <div class="meter-container">
-                        <div id="meterBar" class="meter-bar"></div>
+                    <div class="wave-container">
+                        <canvas id="waveCanvas" class="wave-canvas"></canvas>
                     </div>
                     <div class="meter-labels">
                         <span>Silencio</span>
@@ -52,13 +52,6 @@
 
                 <div class="player-input">
                     <input type="text" id="playerName" placeholder="Tu nombre" maxlength="20">
-                </div>
-            </div>
-
-            <div class="leaderboard">
-                <h3>🏅 Tabla de Puntuaciones</h3>
-                <div id="leaderboardList" class="leaderboard-list">
-                    <div class="empty-leaderboard">¡Sé el primero en gritar!</div>
                 </div>
             </div>
         </main>
