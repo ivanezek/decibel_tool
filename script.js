@@ -32,6 +32,12 @@ class DecibelMeter {
         this.bestPlayerElement = document.getElementById('bestPlayer');
         this.recordBtn = document.getElementById('recordBtn');
         this.playerName = document.getElementById('playerName');
+        
+        // Elementos del modal
+        this.modal = document.getElementById('celebrationModal');
+        this.modalPlayerName = document.getElementById('modalPlayerName');
+        this.modalScore = document.getElementById('modalScore');
+        this.modalCloseBtn = document.getElementById('modalCloseBtn');
     }
     
     setupCanvas() {
@@ -55,6 +61,21 @@ class DecibelMeter {
     initializeEventListeners() {
         this.startBtn.addEventListener('click', () => this.toggleMicrophone());
         this.recordBtn.addEventListener('click', () => this.toggleRecording());
+        
+        // Event listeners del modal
+        this.modalCloseBtn.addEventListener('click', () => this.closeModal());
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) {
+                this.closeModal();
+            }
+        });
+        
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('show')) {
+                this.closeModal();
+            }
+        });
     }
     
     async toggleMicrophone() {
@@ -242,6 +263,32 @@ class DecibelMeter {
         if (decibel > this.currentMaxDecibel) {
             this.currentMaxDecibel = decibel;
             this.currentMax.textContent = `${decibel} dB`;
+            
+            // Actualizar best score en tiempo real si supera el récord actual
+            if (decibel > this.bestScore) {
+                this.bestScore = decibel;
+                
+                // Solo actualizar el nombre si hay uno escrito, sino mantener el anterior o poner temporal
+                const currentName = this.playerName.value.trim();
+                if (currentName) {
+                    this.bestPlayer = currentName;
+                } else if (!this.bestPlayer) {
+                    this.bestPlayer = 'Anónimo';
+                }
+                
+                // Guardar en localStorage
+                localStorage.setItem('flynnkityBestScore', this.bestScore.toString());
+                localStorage.setItem('flynnkityBestPlayer', this.bestPlayer);
+                
+                // Actualizar UI inmediatamente
+                this.bestScoreElement.textContent = `${this.bestScore} dB`;
+                this.bestPlayerElement.textContent = this.bestPlayer;
+                
+                // Agregar efecto visual de nuevo récord
+                this.bestScoreElement.style.animation = 'none';
+                this.bestScoreElement.offsetHeight; // Trigger reflow
+                this.bestScoreElement.style.animation = 'pulse 0.6s ease-in-out';
+            }
         }
         
         // Si está grabando, actualizar máximo de grabación
@@ -293,40 +340,62 @@ class DecibelMeter {
     processRecording(maxDecibel) {
         const playerNameValue = this.playerName.value.trim() || 'Anónimo';
         
-        // Verificar si es un nuevo récord
-        const isNewRecord = maxDecibel > this.bestScore;
+        // El best score ya se actualiza en tiempo real, solo verificar si fue récord
+        const wasNewRecord = maxDecibel >= this.bestScore;
         
-        if (isNewRecord) {
-            this.bestScore = maxDecibel;
+        // Verificar si alcanzó los 100 dB (objetivo)
+        const achieved100dB = maxDecibel >= 100;
+        
+        // Asegurar que el best score esté actualizado con el nombre correcto
+        if (wasNewRecord && this.bestScore === maxDecibel) {
             this.bestPlayer = playerNameValue;
-            
-            // Guardar en localStorage
-            localStorage.setItem('flynnkityBestScore', this.bestScore.toString());
             localStorage.setItem('flynnkityBestPlayer', this.bestPlayer);
-            
-            // Actualizar UI
-            this.loadBestScore();
+            this.bestPlayerElement.textContent = this.bestPlayer;
         }
         
         // Mostrar resultado
-        this.showResult(maxDecibel, playerNameValue, isNewRecord);
+        this.showResult(maxDecibel, playerNameValue, wasNewRecord, achieved100dB);
     }
     
-    showResult(score, playerName, isNewRecord) {
-        if (isNewRecord) {
-            alert(`¡NUEVO RÉCORD! 🏆\n${playerName}: ${score} dB\n¡Felicitaciones por tu grito de Flynnkity!`);
+    showResult(score, playerName, isNewRecord, achieved100dB) {
+        if (achieved100dB) {
+            // Mostrar modal de celebración para 100+ dB
+            this.showCelebrationModal(score, playerName, isNewRecord);
         } else {
-            alert(`¡Buen intento! 🎤\n${playerName}: ${score} dB\n¡Sigue practicando para superar el récord!`);
+            // Mostrar alert normal para puntajes menores
+            if (isNewRecord) {
+                alert(`¡NUEVO RÉCORD! 🏆\n${playerName}: ${score} dB\n¡Sigue intentando llegar a 100 dB!`);
+            } else {
+                alert(`¡Buen intento! 🎤\n${playerName}: ${score} dB\n¡Sigue practicando para llegar a 100 dB!`);
+            }
         }
     }
     
-    loadBestScore() {
+        loadBestScore() {
         if (this.bestScore > 0) {
             this.bestScoreElement.textContent = `${this.bestScore} dB`;
             this.bestPlayerElement.textContent = this.bestPlayer;
         }
     }
-    
+
+    showCelebrationModal(score, playerName, isNewRecord) {
+        // Actualizar contenido del modal
+        this.modalPlayerName.textContent = playerName;
+        this.modalScore.textContent = `${score} dB`;
+        
+        // Mostrar el modal
+        this.modal.classList.add('show');
+        
+        // Agregar efectos de sonido o vibración si están disponibles
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+        }
+    }
+
+    closeModal() {
+        this.modal.classList.remove('show');
+    }
+
     resetCurrentMax() {
         this.currentMaxDecibel = 0;
         this.currentMax.textContent = '0 dB';
@@ -365,6 +434,28 @@ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             }
         });
         document.body.appendChild(resetBtn);
+        
+        // Agregar botón para testear modal (solo para desarrollo)
+        const testModalBtn = document.createElement('button');
+        testModalBtn.textContent = '🎉 Test Modal';
+        testModalBtn.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: #e913d8;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9em;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        `;
+        testModalBtn.addEventListener('click', () => {
+            const testName = meter.playerName.value.trim() || 'Test User';
+            meter.showCelebrationModal(120, testName, true);
+        });
+        document.body.appendChild(testModalBtn);
         
         // Agregar funcionalidad de reset de máximo actual
         document.addEventListener('dblclick', () => {
